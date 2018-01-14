@@ -14,7 +14,9 @@ const webpackConfig = require('./webpack.prod.conf')
 const spinner = ora('building for production...')
 spinner.start()
 
-var app = express()
+const express = require('express')
+const app = express()
+// var app = express()
 
 var appData = require('../data.json');
 var seller = appData.seller;

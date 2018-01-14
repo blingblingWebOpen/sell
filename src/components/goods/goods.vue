@@ -130,6 +130,11 @@
     components: {
       shopcart,
       cartcontrol
+    },
+    events: {
+      'cart.add'(target) {
+
+      }
     }
   };
 </script>

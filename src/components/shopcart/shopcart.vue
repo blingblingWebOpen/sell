@@ -100,6 +100,9 @@
           return `enough`;
         }
       }
+    },
+    methods: {
+
     }
   };
 </script>
@@ -202,6 +205,6 @@
           .inner
             width: 16px
             height:16px
-            border-radius: 50% 
+            border-radius: 50%
             background: rgb(0,160,220)
 </style>
