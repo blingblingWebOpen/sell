@@ -1,6 +1,6 @@
 <template>
   <div class="shopcart">
-    <div class="content">
+    <div class="content" @click="toggleList">
       <div class="content-left">
         <div class="logo-wrapper">
           <div class="logo" :class="{'highlight': totalCount>0}">
@@ -22,10 +22,33 @@
         <div class="inner"></div>
       </div>
     </div>
+    <transition name="fold">
+    <div class="shopcart-list" v-show="listShow">
+      <div class="list-header">
+        <h1 class="title">购物车</h1>
+        <span class="empty">清空</span>
+      </div>
+      <div class="list-content" ref="listConent">
+        <ul>
+          <li class="food" v-for="food in selectFoods">
+            <span class="name">{{food.name}}</span>
+            <div class="price">
+              <span>￥{{food.price*food.count}}</span>
+            </div>
+            <div class="cartcontrol-wrapper">
+              <cartcontrol :food="food"></cartcontrol>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import cartcontrol from '../../components/cartcontrol/cartcontrol';
+  import BScroll from 'better-scroll';
   export default {
     props: {
       selectFoods: {
@@ -65,7 +88,8 @@
           {
             show: false
           }
-        ]
+        ],
+        fold: true // 默认折叠
       };
     },
     computed: {
@@ -99,15 +123,48 @@
         } else {
           return `enough`;
         }
+      },
+      listShow() {
+        if (!this.totalCount) { // 如果等于0
+          this.fold = true;
+          return false;
+        }
+        let show = !this.fold;
+        if (show) {
+          this.$nextTick(() => {
+            if (!this.scroll) {
+              this.scroll = new BScroll(this.$refs.listConent, {
+                click: true
+              });
+            } else {
+              this.scroll.refresh();
+            }
+          });
+        }
+        return show;
       }
     },
     methods: {
-
+      // drop(el) {
+      //   // 父组件_drop调用了子组件drop方法，并且传入了target，在这里我们就能拿到el,el即传入的target
+      //   console.log(el);
+      // },
+      toggleList() {
+        if (!this.totalCount) {
+          return;// 没有东西的时候，点击没反应
+        }
+        this.fold = !this.fold;
+        console.log(this.fold);
+      }
+    },
+    components: {
+      cartcontrol
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/mixin.styl";
   .shopcart
     position: fixed
     left: 0
@@ -207,4 +264,67 @@
             height:16px
             border-radius: 50%
             background: rgb(0,160,220)
+            transition: all 0.4s
+    .fold-enter-active, .fold-leave-active
+      position: absolute
+      left: 0
+      z-index: -1
+      width: 100%
+      transition: all 0.5s
+      transform: translate3d(0,-100%,0)
+    .fold-enter, .fold-leave-to
+      position: absolute
+      top: 0
+      left: 0
+      z-index: -1
+      width: 100%
+      transform: translate3d(0,0,0)
+    .shopcart-list
+      position: absolute
+      top: 0
+      left: 0
+      z-index: -1
+      width: 100%
+      transition: all 0.5s
+      transform: translate3d(0,-100%,0)
+      .list-header
+        height: 40px
+        line-height: 40px
+        padding: 0 18px
+        background: #f3f5f7
+        border-bottom: 1px solid rgba(7,17,27,0.1)
+        .title
+          float: left
+          font-size: 14px
+          color: rgb(7,17,27)
+        .empty
+          float: right
+          font-size: 12px
+          color: rgb(0,160,220)
+      .list-content
+        padding: 0 18px
+        max-height: 217px
+        overflow: hidden
+        background: #fff
+        .food
+          position: relative
+          padding: 12px 0
+          box-sizing: border-box
+          border-1px(rgba(7,17,27,0.1))
+          .name
+            line-height: 24px
+            font-size: 14px
+            color: rgb(7,17,27)
+          .price
+            position: absolute
+            right: 90px
+            bottom: 12px
+            line-height: 24px
+            font-size: 14px
+            font-weight: 700
+            color: rgb(240, 20, 20)
+          .cartcontrol-wrapper
+            position: absolute
+            right: 0
+            bottom: 6px
 </style>

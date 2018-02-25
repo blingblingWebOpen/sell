@@ -14,7 +14,7 @@
         <li v-for="item in goods" class="food-list food-list-hook">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" class="food-item border-1px">
+            <li @click="selectFood(food, $event)" v-for="food in item.foods" class="food-item border-1px">
               <div class="icon">
                 <img width="57" height="57" :src="food.icon">
               </div>
@@ -36,14 +36,18 @@
         </li>
       </ul>
     </div>
-    <shopcart :select-foods="selectFoods" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
+    <!--v-ref:shopcart-->
+    <shopcart ref="shopcart" :select-foods="selectFoods" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
+    <food :food="selectedFood" ref="food"></food>
   </div>
+
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
   import shopcart from '../../components/shopcart/shopcart';
   import cartcontrol from '../../components/cartcontrol/cartcontrol';
+  import food from '../../components/food/food';
   const ERR_OK = 0;
   export default {
     props: {
@@ -55,7 +59,8 @@
       return {
         goods: [],
         listHeight: [],
-        scrollY: 0
+        scrollY: 0,
+        selectedFood: {} // 空对象
       };
     },
     computed: {
@@ -101,6 +106,16 @@
         let el = foodList[index];
         this.foodsScroll.scrollToElement(el, 300);
       },
+      selectFood(food, event) {
+        if (!event._constructed) {
+          return;
+        }
+        this.selectedFood = food;
+        this.$refs.food.show();
+      },
+      _drop(target) {
+        // 父组件访问子组件 this.$refs.shopcart,然后调用子组件的drop方法，把target传入
+      },
       _initScroll() {
         this.menuScroll = new BScroll(this.$refs.menuWrapper, {
           click: true
@@ -128,12 +143,13 @@
       }
     },
     components: {
+      food,
       shopcart,
       cartcontrol
     },
     events: {
-      'cart.add'(target) {
-
+      'cart-add'(target) {
+        this._drop(target);
       }
     }
   };
@@ -244,8 +260,6 @@
               .old
                 color: rgb(147,153,159)
                 font-size: 10px
-
-
             .cartcontrol-wrapper
               position: absolute
               right: 0

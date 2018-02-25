@@ -1,18 +1,20 @@
 <template>
   <div class="cartcontrol">
     <transition name="move">
-    <div class="cart-decrease" @click="decreaseCart" v-show="food.count>0">
+    <div class="cart-decrease" @click.stop.prevent="decreaseCart" v-show="food.count>0">
         <span class="inner icon-remove_circle_outline"></span>
     </div>
     </transition>
     <div class="cart-count" v-show="food.count>0">{{food.count}}</div>
-    <div class="cart-add icon-add_circle" @click="addCart"></div>
+    <div class="cart-add icon-add_circle" @click.stop.prevent="addCart"></div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import Vue from 'vue';
-
+  // 将在各处使用该事件中心
+  // 组件通过它来通信
+  var eventHub = new Vue();
   export default {
     props: {
       food: {
@@ -21,15 +23,17 @@
     },
     methods: {
       addCart() {
-        console.log('click');
         if (!this.food.count) {
           Vue.set(this.food, 'count', 1);
         } else {
           this.food.count ++;
         }
-        this.$dispatch('cart.add', event.target);
+        eventHub.$emit('cart-add', this.target);
+        // this.$dispatch('cart.add', event.target);// 首先拿到这个元素  用这个方法$dispatch派发一个事件，把event.target即dom对象传入
       },
-
+      created() {
+        eventHub.$on('cart-add', this.target);
+      },
       decreaseCart() {
         if (this.food.count) {
           this.food.count --;
